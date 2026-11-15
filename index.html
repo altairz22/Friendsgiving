@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Friendsgiving 2026</title>
+<meta name="description" content="You're invited to Friendsgiving on Saturday, November 28. It's a potluck: claim a dish and bring as many people as you'd like.">
+<meta property="og:title" content="You're invited to Friendsgiving 🥧">
+<meta property="og:description" content="Saturday, November 28. Potluck. Bring a dish, bring your people.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two full-screen views that never scroll the page.
+   Invite = a pie-crust card on a slow 70s sunburst. Table = a gingham tablecloth
+   with one column per course; only the board panel scrolls inside itself. */
+:root {
+  --pumpkin: #DD6430;
+  --pumpkin-deep: #C9521F;
+  --plum: #2B0F2E;
+  --plum-soft: #4A2350;
+  --cream: #FFF4E2;
+  --crust: #F2B65A;
+  --gold: #FFC94D;
+  --sage: #7F9A6B;
+  --cranberry: #B3263E;
+  --ink-muted: #7A5A72;
+  --cloth: #FCEBD2;
+  --cloth-check: rgba(221, 100, 48, .13);
+
+  --display: "Shrikhand", "Cooper Black", Georgia, serif;
+  --body: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --r-pill: 999px;
+  --shadow: 0 18px 50px rgba(43, 15, 46, .35);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body {
+  font-family: var(--body);
+  background: var(--pumpkin);
+  color: var(--plum);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.view {
+  position: fixed; inset: 0;
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  transition: opacity .35s ease, transform .35s ease;
+}
+body[data-view="invite"] #table,
+body[data-view="table"] #invite { opacity: 0; pointer-events: none; transform: scale(.985); visibility: hidden; }
+
+/* ---------- Invite ---------- */
+#invite {
+  display: grid; place-items: center; grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--pumpkin);
+}
+#invite::before {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 260vmax; height: 260vmax; margin: -130vmax 0 0 -130vmax;
+  background: repeating-conic-gradient(var(--pumpkin) 0 7.5deg, var(--pumpkin-deep) 7.5deg 15deg);
+  animation: spin 160s linear infinite;
+  z-index: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.crust {
+  position: relative; z-index: 1;
+  width: min(560px, 100%); min-width: 0;
+  max-height: 100%;
+  padding: 11px;
+  border-radius: 34px;
+  background: radial-gradient(circle at 11px 11px, var(--crust) 10.5px, transparent 11px) 0 0 / 22px 22px;
+  filter: drop-shadow(0 22px 40px rgba(43, 15, 46, .35));
+  animation: rise .8s cubic-bezier(.2, .9, .3, 1.2) both;
+}
+@keyframes rise { from { transform: translateY(24px) rotate(-1.5deg); } to { transform: none; } }
+
+.card {
+  background: var(--plum);
+  color: var(--cream);
+  border-radius: 26px;
+  padding: clamp(18px, 4.2vh, 40px) clamp(18px, 5vw, 44px);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: clamp(8px, 1.7vh, 16px);
+  max-height: calc(100dvh - 2 * max(16px, env(safe-area-inset-top, 0px)) - 22px);
+  overflow: hidden;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: clamp(.7rem, 1.6vh, .82rem);
+  letter-spacing: .22em; text-transform: uppercase; color: var(--crust);
+}
+h1.title {
+  margin: 0; font-family: var(--display); font-weight: 400;
+  font-size: clamp(1.9rem, min(10.6vw, 10vh), 4.3rem);
+  line-height: .95; color: var(--gold);
+  text-shadow: 0 4px 0 var(--cranberry);
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.date {
+  display: flex; align-items: stretch; gap: 10px;
+  font-family: var(--body); font-weight: 800;
+}
+.date .day {
+  display: grid; place-items: center;
+  background: var(--cream); color: var(--plum);
+  border-radius: 14px; padding: 6px 14px;
+  line-height: 1;
+}
+.date .day b { font-size: clamp(1.9rem, 5.5vh, 2.8rem); display: block; }
+.date .day small { font-family: var(--mono); font-weight: 500; font-size: .72rem; letter-spacing: .2em; }
+.date .rest { display: flex; flex-direction: column; justify-content: center; text-align: left; gap: 2px; }
+.date .rest span { font-size: clamp(1rem, 2.6vh, 1.25rem); }
+.date .rest em { font-style: normal; font-weight: 400; color: var(--crust); font-size: clamp(.86rem, 2.1vh, 1rem); }
+
+.pitch {
+  margin: 0; max-width: 40ch;
+  font-size: clamp(.95rem, 2.3vh, 1.1rem); line-height: 1.45;
+  color: #F4DEC9;
+  text-wrap: pretty;
+}
+.pitch strong { color: var(--cream); }
+.plus-ones {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: var(--r-pill);
+  border: 1.5px dashed var(--crust); color: var(--crust);
+  font-family: var(--mono); font-size: clamp(.7rem, 1.8vh, .84rem); letter-spacing: .02em;
+}
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+.btn {
+  border: 0; border-radius: var(--r-pill);
+  padding: clamp(10px, 1.8vh, 14px) 22px;
+  font-weight: 800; font-size: 1rem; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(1px); }
+.btn-gold { background: var(--gold); color: var(--plum); box-shadow: 0 4px 0 #C98F12; }
+.btn-ghost { background: transparent; color: var(--cream); box-shadow: inset 0 0 0 2px rgba(255, 244, 226, .5); }
+.btn-plum { background: var(--plum); color: var(--cream); box-shadow: 0 4px 0 #12040F; }
+
+.whos {
+  display: flex; align-items: center; gap: 10px; min-height: 30px;
+  font-size: .86rem; color: #E6CDBA;
+}
+.faces { display: flex; }
+.faces span {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: .72rem; font-weight: 800; color: var(--plum);
+  border: 2px solid var(--plum); margin-left: -8px;
+}
+.faces span:first-child { margin-left: 0; }
+
+/* ---------- Table ---------- */
+#table {
+  display: grid; grid-template-rows: auto 1fr auto; gap: 12px;
+  background-color: var(--cloth);
+  background-image:
+    linear-gradient(90deg, var(--cloth-check) 50%, transparent 0),
+    linear-gradient(var(--cloth-check) 50%, transparent 0);
+  background-size: 44px 44px;
+}
+.bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; max-width: 1180px; width: 100%; margin: 0 auto; }
+.back {
+  font-family: var(--mono); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--plum); text-decoration: none; padding: 8px 12px; border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .6);
+}
+.bar h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(1.6rem, 4.5vw, 2.4rem); color: var(--pumpkin-deep); line-height: 1; }
+.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat {
+  background: var(--plum); color: var(--cream);
+  border-radius: var(--r-pill); padding: 6px 14px;
+  font-family: var(--mono); font-size: .8rem; font-variant-numeric: tabular-nums;
+}
+.stat b { color: var(--gold); font-weight: 500; }
+
+.board {
+  min-height: 0; overflow: auto; overscroll-behavior: contain;
+  max-width: 1180px; width: 100%; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+  align-content: start;
+  padding: 2px 2px 8px;
+}
+.course {
+  background: rgba(255, 252, 246, .92);
+  border-radius: 20px;
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 2px 0 rgba(43, 15, 46, .08);
+  min-width: 0;
+}
+.course header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.course h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+.count { font-family: var(--mono); font-size: .75rem; color: var(--ink-muted); }
+.need {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .04em;
+  color: var(--cranberry); background: rgba(179, 38, 62, .09);
+  padding: 4px 10px; border-radius: var(--r-pill); align-self: flex-start;
+}
+.dish {
+  display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 14px; background: var(--cream);
+}
+.dish.mine { box-shadow: inset 0 0 0 2px var(--gold); }
+.dish.fresh { animation: pop .7s ease; }
+@keyframes pop { 0% { transform: scale(.9); background: var(--gold); } 100% { transform: none; } }
+.plate {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 52%, #EADBC8 54%, #fff 64%);
+  display: grid; place-items: center; font-size: 1rem;
+  box-shadow: 0 1px 2px rgba(43, 15, 46, .2);
+}
+.dish .what { min-width: 0; }
+.dish .name { font-weight: 800; overflow-wrap: anywhere; line-height: 1.2; }
+.dish .who { font-size: .82rem; color: var(--ink-muted); overflow-wrap: anywhere; }
+.tag {
+  display: inline-block; font-family: var(--mono); font-size: .66rem; letter-spacing: .04em;
+  padding: 1px 6px; border-radius: 6px; background: rgba(127, 154, 107, .2); color: #3F5530; margin-left: 4px;
+  vertical-align: 1px;
+}
+.empty-course { font-size: .85rem; color: var(--ink-muted); padding: 4px 2px; }
+
+.foot { display: flex; justify-content: center; }
+.foot .btn { min-width: min(360px, 100%); font-size: 1.05rem; }
+
+.notice {
+  position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  z-index: 40; background: var(--plum); color: var(--cream);
+  padding: 8px 14px; border-radius: 12px; font-size: .75rem; line-height: 1.35; font-family: var(--mono);
+  width: max-content; max-width: min(440px, calc(100% - 32px)); text-align: center;
+  box-shadow: 0 6px 20px rgba(43, 15, 46, .3);
+}
+@media (max-width: 520px) {
+  .sheet h2 { font-size: 1.5rem; }
+  .pill span { padding: 6px 10px; font-size: .82rem; }
+  form { gap: 10px; }
+}
+
+/* ---------- Sheet (add a dish) ---------- */
+.scrim {
+  position: fixed; inset: 0; z-index: 30;
+  background: rgba(43, 15, 46, .55);
+  display: grid; place-items: end center;
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+.sheet {
+  width: min(620px, 100%); max-height: 100%;
+  overflow: auto; overscroll-behavior: contain;
+  background: var(--cream); color: var(--plum);
+  border-radius: 26px 26px 0 0;
+  padding: 20px max(18px, env(safe-area-inset-left, 0px)) max(18px, env(safe-area-inset-bottom, 0px));
+  box-shadow: var(--shadow);
+  animation: slide .3s cubic-bezier(.2, .9, .3, 1);
+}
+@media (min-width: 700px) {
+  .scrim { place-items: center; }
+  .sheet { border-radius: 26px; padding: 26px 28px; }
+}
+@keyframes slide { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 12px; }
+.sheet h2 { margin: 0; font-family: var(--display); font-weight: 400; color: var(--pumpkin-deep); font-size: 1.8rem; line-height: 1.05; }
+.x { border: 0; background: rgba(43, 15, 46, .08); width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; line-height: 1; flex: none; }
+
+form { display: flex; flex-direction: column; gap: 12px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+label.f { display: flex; flex-direction: column; gap: 5px; font-weight: 600; font-size: .9rem; min-width: 0; }
+label.f > span small { font-weight: 400; color: var(--ink-muted); }
+.input {
+  width: 100%; border: 2px solid #E9D3B8; background: #fff; border-radius: 14px;
+  padding: 11px 13px; font-size: 1rem;
+}
+.input:focus { outline: none; border-color: var(--pumpkin); }
+
+.legend { font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill input { position: absolute; opacity: 0; pointer-events: none; }
+.pill span {
+  display: inline-block; padding: 7px 12px; border-radius: var(--r-pill);
+  border: 2px solid #E9D3B8; background: #fff; font-size: .86rem; font-weight: 600;
+  transition: background .15s, border-color .15s;
+}
+.pill input:checked + span { background: var(--plum); border-color: var(--plum); color: var(--cream); }
+.pill input:focus-visible + span { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.stepper { display: flex; align-items: center; gap: 10px; }
+.stepper button {
+  width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: var(--plum); color: var(--cream); font-size: 1.3rem; font-weight: 800; line-height: 1;
+}
+.stepper output { min-width: 3ch; text-align: center; font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.stepper .hint { font-size: .85rem; color: var(--ink-muted); }
+
+.heads-up {
+  border-radius: 16px; padding: 12px 14px;
+  background: #FFE7B0; border: 2px solid var(--gold);
+  display: flex; flex-direction: column; gap: 8px; font-size: .92rem;
+}
+.heads-up.soft { background: #F3EBDD; border-color: #E5D3BA; }
+.heads-up p { margin: 0; }
+.ideas { display: flex; flex-wrap: wrap; gap: 6px; }
+.idea {
+  border: 0; border-radius: var(--r-pill); padding: 7px 12px;
+  background: #fff; box-shadow: inset 0 0 0 2px var(--pumpkin); color: var(--pumpkin-deep);
+  font-weight: 700; font-size: .86rem; text-align: left;
+}
+.idea:hover { background: var(--pumpkin); color: #fff; }
+.idea small { display: block; font-weight: 400; color: inherit; opacity: .8; font-size: .74rem; }
+.linkish { border: 0; background: none; padding: 0; text-decoration: underline; font-weight: 600; color: var(--plum-soft); font-size: .86rem; align-self: flex-start; }
+.thinking { font-family: var(--mono); font-size: .76rem; color: var(--ink-muted); }
+
+.submit-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.submit-row .btn { flex: 1 1 auto; }
+.err { color: var(--cranberry); font-weight: 600; font-size: .88rem; margin: 0; }
+
+.done { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0 6px; }
+.done .big { font-size: 3rem; line-height: 1; }
+.done p { margin: 0; max-width: 36ch; }
+
+/* ---------- Small / short screens ---------- */
+@media (max-width: 900px) { .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .bar h2 { order: 3; width: 100%; }
+}
+@media (max-height: 620px) {
+  .whos { display: none; }
+  .plus-ones { display: none; }
+}
+@media (max-height: 520px) { .pitch { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body data-view="invite">
+
+<!-- ================= INVITATION ================= -->
+<main id="invite" class="view" aria-labelledby="inv-title">
+  <div class="crust">
+    <div class="card">
+      <div class="eyebrow">You're invited to</div>
+      <h1 class="title" id="inv-title">Friendsgiving</h1>
+
+      <div class="date" aria-label="Saturday, November 28">
+        <div class="day"><small>NOV</small><b>28</b></div>
+        <div class="rest">
+          <span id="c-weekday">Saturday</span>
+          <em id="c-time">6:00 PM till late</em>
+          <em id="c-place">Address in the group chat</em>
+        </div>
+      </div>
+
+      <p class="pitch">It's a <strong>potluck</strong>. Bring something you love to cook (or buy), and we'll fill one very long table with it.</p>
+
+      <div class="plus-ones">+ bring as many people as you'd like</div>
+
+      <div class="actions">
+        <a class="btn btn-gold" href="#add" id="cta-add">Claim a dish</a>
+        <a class="btn btn-ghost" href="#table">See what's on the table →</a>
+      </div>
+
+      <div class="whos" id="whos" aria-live="polite"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ================= THE TABLE ================= -->
+<section id="table" class="view" aria-labelledby="tbl-title">
+  <div class="bar">
+    <a class="back" href="#invite">← Invitation</a>
+    <h2 id="tbl-title">What's on the table</h2>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="board" id="board" aria-live="polite"></div>
+  <div class="foot">
+    <a class="btn btn-plum" href="#add">+ Add what you're bringing</a>
+  </div>
+</section>
+
+<!-- ================= ADD SHEET ================= -->
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <h2 id="sheet-title">What are you bringing?</h2>
+      <button class="x" type="button" id="close" aria-label="Close">×</button>
+    </div>
+
+    <form id="form" novalidate>
+      <div class="row">
+        <label class="f"><span>Your name</span>
+          <input class="input" id="f-name" name="name" autocomplete="name" maxlength="60" required placeholder="Jordan">
+        </label>
+        <label class="f"><span>Your dish</span>
+          <input class="input" id="f-dish" name="dish" maxlength="80" required placeholder="Mac &amp; cheese" autocomplete="off">
+        </label>
+      </div>
+
+      <div id="dish-help"></div>
+
+      <div>
+        <div class="legend" id="course-legend">Which course is it?</div>
+        <div class="pills" id="f-course" role="radiogroup" aria-labelledby="course-legend"></div>
+      </div>
+
+      <div class="row">
+        <div>
+          <div class="legend">Who's coming with you?</div>
+          <div class="stepper">
+            <button type="button" id="minus" aria-label="One fewer guest">−</button>
+            <output id="f-guests" aria-live="polite">0</output>
+            <button type="button" id="plus" aria-label="One more guest">+</button>
+            <span class="hint" id="guest-hint">Just me</span>
+          </div>
+        </div>
+        <div>
+          <div class="legend">Good to know <small style="font-weight:400;color:var(--ink-muted)">(optional)</small></div>
+          <div class="pills" id="f-diet"></div>
+        </div>
+      </div>
+
+      <p class="err" id="err" hidden></p>
+      <div class="submit-row">
+        <button class="btn btn-gold" type="submit" id="submit">Put it on the table</button>
+        <button class="linkish" type="button" id="need-idea">Stuck? Get ideas</button>
+      </div>
+    </form>
+
+    <div class="done" id="done" hidden>
+      <div class="big">🥧</div>
+      <h2 id="done-title">You're on the table!</h2>
+      <p id="done-msg"></p>
+      <div class="actions">
+        <button class="btn btn-plum" type="button" id="done-close">See the table</button>
+        <button class="btn btn-ghost" type="button" id="done-again" style="color:var(--plum);box-shadow:inset 0 0 0 2px var(--plum)">Add another dish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notice" id="notice" hidden></div>
+
+<script>
+/* ============================================================
+   EDIT THESE: party details + your Google Apps Script URL
+   ============================================================ */
+const CONFIG = {
+  apiUrl: "",                          // paste your Apps Script web app URL (ends in /exec)
+  weekday: "Saturday",
+  time: "6:00 PM till late",
+  place: "Address in the group chat",
+};
+
+/* ---------------- Data ---------------- */
+const COURSES = [
+  { id: "main",    label: "Mains",          icon: "🦃", want: 2 },
+  { id: "side",    label: "Sides",          icon: "🥔", want: 4 },
+  { id: "app",     label: "Starters",       icon: "🧀", want: 2 },
+  { id: "bread",   label: "Bread & rolls",  icon: "🥖", want: 1 },
+  { id: "dessert", label: "Desserts",       icon: "🥧", want: 3 },
+  { id: "drinks",  label: "Drinks",         icon: "🍷", want: 2 },
+];
+const COURSE = Object.fromEntries(COURSES.map(c => [c.id, c]));
+const DIETS = ["Vegetarian", "Vegan", "Gluten-free", "Has nuts"];
+
+const IDEA_BANK = {
+  main:    ["Herb-roasted turkey breast", "Honey-glazed ham", "Butternut squash lasagna", "Roast chicken with lemon", "Mushroom wellington", "Braised short ribs", "Chicken biryani", "Stuffed acorn squash"],
+  side:    ["Garlic mashed potatoes", "Green bean casserole", "Mac & cheese", "Cornbread stuffing", "Roasted Brussels sprouts", "Sweet potato casserole", "Maple-roasted carrots", "Wild rice pilaf", "Kale & apple salad", "Cranberry sauce"],
+  app:     ["Cheese & charcuterie board", "Deviled eggs", "Spinach artichoke dip", "Baked brie with jam", "Stuffed mushrooms", "Hummus & veggie platter", "Pigs in a blanket", "Samosas"],
+  bread:   ["Parker House rolls", "Skillet cornbread", "Garlic knots", "Pumpkin bread", "Focaccia"],
+  dessert: ["Pumpkin pie", "Apple crumble", "Pecan pie", "Chocolate chip cookies", "Cheesecake", "Sweet potato pie", "Brownies", "Gulab jamun", "Tiramisu"],
+  drinks:  ["Mulled apple cider", "A couple bottles of wine", "Sparkling cranberry punch", "Craft beer six-pack", "Hot chocolate bar", "Soda & seltzer", "Chai"],
+};
+
+/* ---------------- Dish matching ---------------- */
+const PHRASES = [
+  [/\bmac(aroni)?\s*(n|and|&|'n'?)\s*cheese\b/g, "macaroni cheese"],
+  [/\bmac\b/g, "macaroni"],
+  [/\byams?\b/g, "sweet potato"],
+  [/\bdressing\b/g, "stuffing"],
+  [/\bmashed\b/g, "mash"],
+  [/\btaters?\b/g, "potato"],
+  [/\b(sodas?|pop|soft drinks?)\b/g, "soda"],
+  [/\bvino\b/g, "wine"],
+  [/\bcookies?\b/g, "cookie"],
+];
+const STOP = new Set("a an the and n of with my some our your homemade home made famous mom moms grandma grandmas nana classic easy big small tray pan dish bowl plate batch fresh style extra little lots bunch few couple bottle bottles box boxes".split(" "));
+function singular(w) {
+  if (w.length > 4 && w.endsWith("ies")) return w.slice(0, -3) + "y";
+  if (w.length > 4 && /(oes|shes|ches)$/.test(w)) return w.slice(0, -2);
+  if (w.length > 3 && w.endsWith("s") && !w.endsWith("ss")) return w.slice(0, -1);
+  return w;
+}
+function tokens(s) {
+  let t = (s || "").toLowerCase().replace(/[’']/g, "'").replace(/&/g, " and ");
+  for (const [re, rep] of PHRASES) t = t.replace(re, rep);
+  return new Set(t.replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).map(singular).filter(w => w && !STOP.has(w)));
+}
+// Returns { level: "taken" | "similar", entry } or null
+function findClash(dish, entries) {
+  const a = tokens(dish);
+  if (!a.size) return null;
+  let best = null;
+  for (const e of entries) {
+    const b = tokens(e.dish);
+    if (!b.size) continue;
+    let inter = 0; a.forEach(w => b.has(w) && inter++);
+    if (!inter) continue;
+    const jac = inter / (a.size + b.size - inter);
+    const subset = inter === Math.min(a.size, b.size);
+    let level = null;
+    if (jac >= 0.6) level = "taken";
+    else if (subset) level = "similar";
+    if (level && (!best || (level === "taken" && best.level !== "taken") || jac > best.jac)) best = { level, entry: e, jac };
+  }
+  return best;
+}
+const isTaken = (dish, entries) => findClash(dish, entries)?.level === "taken";
+
+function guessCourse(dish) {
+  const d = (dish || "").toLowerCase();
+  const rules = [
+    ["drinks",  /(wine|beer|cider|punch|soda|seltzer|juice|cocktail|sangria|chai|coffee|tea\b|cocoa|hot chocolate|lemonade|champagne|prosecco|drink|whisk|bourbon|vodka|tequila|mocktail)/],
+    ["dessert", /(pie|cake|cookie|brownie|crumble|cobbler|tart|pudding|ice cream|cheesecake|tiramisu|cupcake|donut|doughnut|fudge|baklava|gulab|halwa|kheer|dessert|sweet treat|macaron|bars?\b)/],
+    ["bread",   /(roll|bread|biscuit|cornbread|focaccia|baguette|naan|garlic knot|croissant)/],
+    ["app",     /(dip|charcuterie|cheese board|board|deviled|wings|chips|salsa|crostini|bruschetta|brie|samosa|spring roll|pigs in|meatball|shrimp|appetizer|starter|platter|nachos)/],
+    ["main",    /(turkey|ham\b|roast|brisket|lasagna|chicken|beef|lamb|salmon|wellington|biryani|curry|short rib|pork|tofurky|main|enchilada|pot pie)/],
+    ["side",    /(potato|mash|stuffing|casserole|green bean|salad|sprout|carrot|corn|squash|rice|pilaf|gravy|cranberry|macaroni|mac|veg|beans|slaw|gratin|side)/],
+  ];
+  for (const [id, re] of rules) if (re.test(d)) return id;
+  return null;
+}
+
+function bankIdeas(entries, preferCourse) {
+  const counts = courseCounts(entries);
+  // Courses ordered by how far under their target they are
+  const order = COURSES.map(c => ({ id: c.id, gap: (counts[c.id] || 0) / c.want }))
+    .sort((x, y) => x.gap - y.gap).map(x => x.id);
+  if (preferCourse) order.unshift(preferCourse);
+  const out = [], seen = new Set();
+  for (const id of order) {
+    if (seen.has(id)) continue; seen.add(id);
+    const opts = IDEA_BANK[id].filter(d => !findClash(d, entries));
+    const pick = opts[Math.floor(Math.random() * opts.length)];
+    if (pick) out.push({ dish: pick, course: id, why: preferCourse === id && out.length === 0 ? "same course, not taken yet" : `${COURSE[id].label.toLowerCase()} need${(counts[id] || 0) === 0 ? " a first one" : " more"}` });
+    if (out.length === 3) break;
+  }
+  return out;
+}
+
+function courseCounts(entries) {
+  const c = {};
+  for (const e of entries) c[e.course] = (c[e.course] || 0) + 1;
+  return c;
+}
+function headcount(entries) {
+  const people = new Map();
+  for (const e of entries) {
+    const k = (e.name || "").trim().toLowerCase();
+    people.set(k, Math.max(people.get(k) || 0, Number(e.guests) || 0));
+  }
+  let n = 0; people.forEach(g => n += 1 + g);
+  return n;
+}
+
+/* ---------------- API ---------------- */
+const LIVE = !!CONFIG.apiUrl;
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+async function api(action, payload = {}) {
+  if (!LIVE) return demoApi(action, payload);
+  if (action === "list") {
+    const r = await fetch(CONFIG.apiUrl + "?action=list", { cache: "no-store" });
+    return r.json();
+  }
+  // Plain-text body keeps this a "simple" request, so Apps Script needs no CORS preflight.
+  const r = await fetch(CONFIG.apiUrl, { method: "POST", body: JSON.stringify({ action, ...payload }) });
+  return r.json();
+}
+function demoApi(action, p) {
+  const entries = store.get("fg-demo", []);
+  if (action === "list") return { ok: true, entries };
+  if (action === "add") {
+    const e = { id: "d" + Date.now(), ts: new Date().toISOString(), name: p.name, dish: p.dish, course: p.course, guests: p.guests, diet: p.diet };
+    entries.push(e); store.set("fg-demo", entries);
+    return { ok: true, entry: e, entries };
+  }
+  if (action === "ideas") return { ok: false, error: "demo" };
+}
+
+/* ---------------- State ---------------- */
+let entries = [];
+let mine = new Set(store.get("fg-mine", []));
+let freshId = null;
+let loaded = false;
+
+async function refresh() {
+  try {
+    const res = await api("list");
+    if (res && res.ok) { entries = res.entries || []; loaded = true; render(); }
+  } catch (e) {
+    if (!loaded) showNotice("Couldn't load the table. Check your connection and refresh.");
+  }
+}
+
+/* ---------------- Render ---------------- */
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+const FACE_COLORS = ["#FFC94D", "#F2B65A", "#9CC08A", "#F59E8B", "#C9B6E4", "#FFF4E2"];
+
+function render() {
+  // Invite: who's coming
+  const whos = $("whos"); whos.replaceChildren();
+  if (entries.length) {
+    const names = [...new Map(entries.map(e => [e.name.trim().toLowerCase(), e.name.trim()])).values()];
+    const faces = el("div", "faces");
+    names.slice(0, 5).forEach((n, i) => {
+      const s = el("span", null, n.slice(0, 1).toUpperCase());
+      s.style.background = FACE_COLORS[i % FACE_COLORS.length];
+      s.title = n; faces.append(s);
+    });
+    const people = headcount(entries);
+    whos.append(faces, el("span", null, `${people} ${people === 1 ? "person" : "people"} coming · ${entries.length} ${entries.length === 1 ? "dish" : "dishes"} claimed`));
+  } else if (loaded) {
+    whos.append(el("span", null, "No dishes claimed yet. Yours could be first."));
+  }
+
+  // Table stats
+  const people = headcount(entries);
+  const stats = $("stats"); stats.replaceChildren();
+  const s1 = el("span", "stat"); s1.append(el("b", null, String(people)), ` ${people === 1 ? "person" : "people"}`);
+  const s2 = el("span", "stat"); s2.append(el("b", null, String(entries.length)), ` ${entries.length === 1 ? "dish" : "dishes"}`);
+  stats.append(s1, s2);
+
+  // Board
+  const board = $("board"); board.replaceChildren();
+  const counts = courseCounts(entries);
+  for (const c of COURSES) {
+    const items = entries.filter(e => e.course === c.id);
+    const box = el("section", "course");
+    const h = el("header"); h.append(el("h3", null, `${c.icon} ${c.label}`), el("span", "count", `${items.length}`));
+    box.append(h);
+    if (!items.length) {
+      box.append(el("div", "need", loaded ? `Nobody yet. Claim it!` : "Loading…"));
+    } else {
+      if ((counts[c.id] || 0) < c.want) box.append(el("div", "need", `could use ${c.want - counts[c.id]} more`));
+      for (const e of items) {
+        const row = el("div", "dish" + (mine.has(e.id) ? " mine" : "") + (e.id === freshId ? " fresh" : ""));
+        row.append(el("div", "plate", c.icon));
+        const what = el("div", "what");
+        const name = el("div", "name", e.dish);
+        (e.diet || []).forEach(d => name.append(el("span", "tag", d)));
+        what.append(name, el("div", "who", `${e.name}${Number(e.guests) ? ` + ${e.guests}` : ""}${mine.has(e.id) ? " (you)" : ""}`));
+        row.append(what);
+        box.append(row);
+      }
+    }
+    board.append(box);
+  }
+}
+
+/* ---------------- Form ---------------- */
+let guests = 0, courseTouched = false, override = false, ideasAbort = null;
+
+function buildForm() {
+  const cg = $("f-course");
+  COURSES.forEach(c => {
+    const l = el("label", "pill");
+    const i = el("input"); i.type = "radio"; i.name = "course"; i.value = c.id; i.id = "course-" + c.id;
+    i.addEventListener("change", () => { courseTouched = true; });
+    l.append(i, el("span", null, `${c.icon} ${c.label}`));
+    cg.append(l);
+  });
+  const dg = $("f-diet");
+  DIETS.forEach(d => {
+    const l = el("label", "pill");
+    const i = el("input"); i.type = "checkbox"; i.name = "diet"; i.value = d; i.id = "diet-" + d.toLowerCase().replace(/\W+/g, "-");
+    l.append(i, el("span", null, d));
+    dg.append(l);
+  });
+  setGuests(0);
+}
+function setGuests(n) {
+  guests = Math.max(0, Math.min(30, n));
+  $("f-guests").textContent = guests;
+  $("guest-hint").textContent = guests === 0 ? "Just me" : `Me + ${guests}`;
+}
+function setCourse(id) {
+  const r = document.querySelector(`input[name=course][value="${id}"]`);
+  if (r) r.checked = true;
+}
+function selectedCourse() { return document.querySelector("input[name=course]:checked")?.value || null; }
+
+function dishChanged() {
+  override = false;
+  const dish = $("f-dish").value;
+  if (!courseTouched) { const g = guessCourse(dish); if (g) setCourse(g); }
+  checkDish(false);
+}
+let checkTimer = null;
+$("f-dish")?.addEventListener("input", () => { clearTimeout(checkTimer); checkTimer = setTimeout(dishChanged, 350); });
+
+function checkDish(fromSubmit) {
+  const help = $("dish-help");
+  const dish = $("f-dish").value.trim();
+  const clash = dish.length > 2 ? findClash(dish, entries) : null;
+  if (!clash || override) { if (!help.dataset.ideas) help.replaceChildren(); return null; }
+  delete help.dataset.ideas;
+  const box = el("div", "heads-up" + (clash.level === "similar" ? " soft" : ""));
+  const who = clash.entry.name;
+  const msg = el("p");
+  if (clash.level === "taken") {
+    msg.append(el("strong", null, "Wait, that one's taken. "), `${who} is already bringing ${clash.entry.dish}. Want to switch it up?`);
+  } else {
+    msg.append(el("strong", null, "Close call. "), `${who} is bringing ${clash.entry.dish}. Is that the same thing?`);
+  }
+  box.append(msg);
+  const ideaRow = el("div", "ideas");
+  box.append(ideaRow);
+  const anyway = el("button", "linkish", clash.level === "taken" ? "I'll bring mine anyway" : "Mine's different, keep it");
+  anyway.type = "button";
+  anyway.addEventListener("click", () => { override = true; help.replaceChildren(); if (fromSubmit) $("form").requestSubmit(); });
+  box.append(anyway);
+  help.replaceChildren(box);
+  fillIdeas(ideaRow, dish, selectedCourse() || clash.entry.course);
+  return clash;
+}
+
+function ideaButton(idea) {
+  const b = el("button", "idea");
+  b.type = "button";
+  b.append(`${COURSE[idea.course]?.icon || "🍽️"} ${idea.dish}`);
+  if (idea.why) b.append(el("small", null, idea.why));
+  b.addEventListener("click", () => {
+    $("f-dish").value = idea.dish;
+    if (COURSE[idea.course]) { setCourse(idea.course); courseTouched = true; }
+    override = false;
+    $("dish-help").replaceChildren();
+    delete $("dish-help").dataset.ideas;
+    $("f-dish").focus();
+  });
+  return b;
+}
+
+function fillIdeas(row, dish, course) {
+  row.replaceChildren(...bankIdeas(entries, course).map(ideaButton));
+  if (!LIVE) return;
+  ideasAbort?.abort?.();
+  const ctl = ideasAbort = { aborted: false, abort() { this.aborted = true; } };
+  const note = el("span", "thinking", "Asking the kitchen for more ideas…");
+  row.append(note);
+  api("ideas", {
+    dish, course,
+    taken: entries.map(e => ({ dish: e.dish, course: e.course })),
+  }).then(res => {
+    if (ctl.aborted || !row.isConnected) return;
+    const fresh = (res && res.ok && Array.isArray(res.ideas) ? res.ideas : [])
+      .filter(i => i && i.dish && !isTaken(i.dish, entries)).slice(0, 4);
+    if (fresh.length) row.replaceChildren(...fresh.map(ideaButton));
+    else note.remove();
+  }).catch(() => { note.remove(); });
+}
+
+$("need-idea").addEventListener("click", () => {
+  const help = $("dish-help");
+  const box = el("div", "heads-up soft");
+  box.append(el("p", null, "Here's what the table could use right now. Tap one to grab it:"));
+  const row = el("div", "ideas"); box.append(row);
+  help.replaceChildren(box);
+  help.dataset.ideas = "1";
+  fillIdeas(row, $("f-dish").value.trim(), selectedCourse());
+});
+
+$("minus").addEventListener("click", () => setGuests(guests - 1));
+$("plus").addEventListener("click", () => setGuests(guests + 1));
+
+function showErr(t) { const e = $("err"); e.textContent = t; e.hidden = !t; }
+
+$("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  showErr("");
+  const name = $("f-name").value.trim();
+  const dish = $("f-dish").value.trim();
+  let course = selectedCourse() || guessCourse(dish);
+  if (!name) { showErr("Add your name so people know who's bringing it."); $("f-name").focus(); return; }
+  if (!dish) { showErr("Tell us what you're bringing."); $("f-dish").focus(); return; }
+  if (!course) { showErr("Pick which course it is."); return; }
+  // Get the freshest list before checking for doubles
+  await refresh();
+  if (!override && checkDish(true)) { $("dish-help").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+
+  const diet = [...document.querySelectorAll("input[name=diet]:checked")].map(i => i.value);
+  const btn = $("submit"); btn.disabled = true; btn.textContent = "Setting the table…";
+  try {
+    const res = await api("add", { name, dish, course, guests, diet });
+    if (!res || !res.ok) throw new Error(res?.error || "failed");
+    entries = res.entries || [...entries, res.entry];
+    mine.add(res.entry.id); store.set("fg-mine", [...mine]);
+    store.set("fg-name", name);
+    freshId = res.entry.id;
+    render();
+    $("form").hidden = true; $("done").hidden = false;
+    $("done-msg").textContent = `${dish} is on the table${guests ? `, and we'll save ${guests === 1 ? "a seat" : guests + " seats"} for your crew` : ""}. See you Saturday, November 28!`;
+  } catch (e) {
+    showErr("That didn't go through. Check your connection and try again.");
+  } finally {
+    btn.disabled = false; btn.textContent = "Put it on the table";
+  }
+});
+
+function resetForm() {
+  $("form").reset();
+  $("f-name").value = store.get("fg-name", "");
+  setGuests(0); courseTouched = false; override = false;
+  $("dish-help").replaceChildren(); delete $("dish-help").dataset.ideas;
+  showErr("");
+  $("form").hidden = false; $("done").hidden = true;
+}
+function openSheet() {
+  resetForm();
+  $("scrim").hidden = false;
+  setTimeout(() => ($("f-name").value ? $("f-dish") : $("f-name")).focus(), 60);
+}
+function closeSheet() { $("scrim").hidden = true; }
+
+$("close").addEventListener("click", () => { location.hash = "table"; });
+$("done-close").addEventListener("click", () => { location.hash = "table"; });
+$("done-again").addEventListener("click", () => { resetForm(); $("f-dish").focus(); });
+$("scrim").addEventListener("click", e => { if (e.target === $("scrim")) location.hash = "table"; });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("scrim").hidden) location.hash = "table"; });
+
+/* ---------------- Routing ---------------- */
+function route() {
+  const h = location.hash.replace("#", "");
+  const view = h === "table" || h === "add" ? "table" : "invite";
+  document.body.dataset.view = view;
+  if (h === "add") openSheet(); else closeSheet();
+  if (view === "table") refresh();
+}
+window.addEventListener("hashchange", route);
+
+let noticeTimer;
+function showNotice(t, ms = 5000) {
+  const n = $("notice"); n.textContent = t; n.hidden = false;
+  clearTimeout(noticeTimer); if (ms) noticeTimer = setTimeout(() => n.hidden = true, ms);
+}
+
+/* ---------------- Boot ---------------- */
+$("c-weekday").textContent = CONFIG.weekday;
+$("c-time").textContent = CONFIG.time;
+$("c-place").textContent = CONFIG.place;
+buildForm();
+render();
+route();
+refresh();
+setInterval(() => { if (!document.hidden) refresh(); }, 20000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+if (!LIVE) showNotice("Preview mode: sign-ups only save in this browser until the Google Sheet is connected.", 6000);
+</script>
+</body>
+</html>
