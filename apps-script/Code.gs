@@ -94,11 +94,16 @@ function addEntry_(b) {
   const guests = Math.max(0, Math.min(30, Math.floor(Number(b.guests) || 0)));
   const diet = (Array.isArray(b.diet) ? b.diet : []).filter(d => DIETS.indexOf(d) !== -1);
   if (!name || !dish) return { ok: false, error: 'name and dish are required' };
+  // Per-course limit comes from CONFIG.limits in index.html (null = no limit).
+  const limit = Math.floor(Number(b.limit) || 0) || null;
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   let entry;
   try {
+    if (limit && readEntries_().filter(e => e.course === course).length >= limit) {
+      return { ok: false, error: 'full', entries: readEntries_() };
+    }
     entry = { ts: new Date().toISOString(), name, dish, course, guests, diet, id: Utilities.getUuid() };
     // Leading apostrophe stops Sheets from treating text like "=SUM()" or "+1" as a formula.
     const safe = s => (/^[=+\-@]/.test(s) ? "'" + s : s);
@@ -108,7 +113,7 @@ function addEntry_(b) {
   }
 
   const entries = readEntries_();
-  try { notifyHost_(entry, entries); } catch (err) { console.error('email failed', err); }
+  try { notifyHost_(entry, entries, limit); } catch (err) { console.error('email failed', err); }
   return { ok: true, entry, entries };
 }
 
@@ -127,8 +132,9 @@ function esc_(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function notifyHost_(entry, entries) {
+function notifyHost_(entry, entries, limit) {
   const people = headcount_(entries);
+  const nowFull = limit && entries.filter(e => e.course === entry.course).length >= limit;
   const plus = entry.guests ? ` (+${entry.guests})` : '';
   const subject = `🦃 ${entry.name}${plus} is bringing ${entry.dish}`;
 
@@ -147,6 +153,7 @@ function notifyHost_(entry, entries) {
     `<h2 style="margin:0 0 6px;color:#C9521F">New potluck sign-up</h2>` +
     `<p style="font-size:16px;margin:0 0 4px"><b>${esc_(entry.name)}</b>${plus} is bringing <b>${esc_(entry.dish)}</b> ` +
     `<span style="color:#7A5A72">(${COURSES[entry.course]}${entry.diet.length ? ', ' + esc_(entry.diet.join(', ')) : ''})</span></p>` +
+    (nowFull ? `<p style="margin:0 0 8px;color:#3F5530"><b>${COURSES[entry.course]} are now full (${limit} of ${limit}).</b> New guests will be steered to other courses.</p>` : '') +
     `<p style="margin:0 0 16px;color:#7A5A72">Running total: <b>${people} people</b> and <b>${entries.length} dishes</b> for ${PARTY_DATE}.</p>` +
     `<table style="border-collapse:collapse;background:#FFF4E2;border-radius:10px;width:100%">${rows}</table>` +
     (SITE_URL ? `<p style="margin-top:16px"><a href="${esc_(SITE_URL)}#table">Open the table</a></p>` : '') +
@@ -171,15 +178,18 @@ function ideas_(b) {
     .map(t => `- ${clean_(t.dish, 80)} (${COURSES[t.course] || 'other'})`).join('\n') || '- nothing yet';
   const wanted = clean_(b.dish, 80);
   const course = COURSES[b.course] ? COURSES[b.course] : '';
+  const fullIds = (Array.isArray(b.full) ? b.full : []).filter(id => COURSES[id]);
+  const full = fullIds.map(id => COURSES[id]);
 
   const prompt =
     `We're hosting a Friendsgiving potluck. A guest needs a dish idea.\n\n` +
     `Already claimed:\n${taken}\n\n` +
-    (wanted ? `The guest wanted to bring: "${wanted}"${course ? ` (${course})` : ''}. It's taken or too similar to something above, so suggest alternatives in the same spirit.\n` :
+    (wanted ? `The guest wanted to bring: "${wanted}"${course ? ` (${course})` : ''}. It's taken, too similar to something above, or its course is full, so suggest alternatives.\n` :
               `The guest has no idea yet. Suggest what the table is missing most.\n`) +
     `\nGive 3 suggestions. Rules:\n` +
     `- Nothing that duplicates or closely overlaps a claimed dish.\n` +
     `- Favor courses that are thin (mains, sides, starters, bread, desserts, drinks).\n` +
+    (full.length ? `- These courses are full. Never suggest anything from them: ${full.join(', ')}.\n` : '') +
     `- Realistic for a home cook to make or pick up and carry over.\n` +
     `- "dish" is a short name (max 5 words). "why" is a friendly reason, max 8 words.`;
 
@@ -235,7 +245,7 @@ function ideas_(b) {
   const text = (msg.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
   let parsed;
   try { parsed = JSON.parse(text); } catch (err) { return { ok: false, error: 'ideas unavailable' }; }
-  const ideas = (parsed.ideas || []).slice(0, 4).map(i => ({
+  const ideas = (parsed.ideas || []).filter(i => fullIds.indexOf(i.course) === -1).slice(0, 4).map(i => ({
     dish: clean_(i.dish, 60), course: COURSES[i.course] ? i.course : 'side', why: clean_(i.why, 80),
   }));
   return { ok: true, ideas };

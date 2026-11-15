@@ -5,12 +5,15 @@ A one-page invite for Friendsgiving on **Saturday, November 28**, plus a live po
 - **Invitation** (`index.html`): fits one screen with no scrolling. Guests tap **Claim a dish** or **See what's on the table**.
 - **The table** (`index.html#table`): everyone's dishes grouped by course, with a running headcount and the courses that still need something.
 - **Doubles check:** if someone types a dish that's already claimed ("mac n cheese" vs "Mac & Cheese", "pumpkin pies" vs "Pumpkin pie"), they get a heads-up with ideas for what the table still needs. Claude can suggest those ideas if you add your API key. They can still bring theirs anyway.
+- **Course limits:** once a course hits its limit (5 sides and 3 drinks by default), it's marked full on the board and the form, and anyone trying to add one is pointed to the courses that still need food. You also get a "Sides are now full" line in the email that fills it.
 - **Bring as many people as you'd like:** each guest adds how many people they're bringing, and the headcount updates.
 - **Email:** every sign-up sends an email to the host with the dish and the full current list.
 
 | Invitation | The table | Doubles check |
 |---|---|---|
 | ![Invitation](docs/invite.png) | ![The table](docs/table.png) | ![Duplicate check](docs/duplicate-check.png) |
+
+![Course full](docs/course-full.png)
 
 (Screenshots use made-up sample names.)
 
@@ -48,6 +51,7 @@ const CONFIG = {
   weekday: "Saturday",
   time: "6:00 PM till late",          // change to your real time
   place: "Address in the group chat", // or your actual address
+  limits: { main: null, side: 5, app: null, bread: null, dessert: null, drinks: 3 },  // most dishes per course; null = no limit
 };
 ```
 
@@ -65,5 +69,6 @@ Send friends the link. To send people straight to the board, add `#table` to the
 ## Running it
 
 - **Edit or remove a sign-up:** edit the row in the Google Sheet. The page picks up changes within about 20 seconds.
+- **Change course limits:** edit `limits` in the `CONFIG` block of `index.html`. No need to touch the script.
 - **Change the notification email:** edit `HOST_EMAIL` at the top of `Code.gs`. After any change to the script, use **Deploy → Manage deployments → Edit → New version** so the live link uses it.
 - **Add your invite link to the emails:** set `SITE_URL` in `Code.gs`.

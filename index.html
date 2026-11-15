@@ -194,7 +194,7 @@ h1.title {
   min-height: 0; overflow: auto; overscroll-behavior: contain;
   max-width: 1180px; width: 100%; margin: 0 auto;
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
-  align-content: start;
+  align-content: start; align-items: start;
   padding: 2px 2px 8px;
 }
 .course {
@@ -213,6 +213,7 @@ h1.title {
   color: var(--cranberry); background: rgba(179, 38, 62, .09);
   padding: 4px 10px; border-radius: var(--r-pill); align-self: flex-start;
 }
+.need.full { color: #3F5530; background: rgba(127, 154, 107, .22); }
 .dish {
   display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center;
   padding: 8px 10px; border-radius: 14px; background: var(--cream);
@@ -299,6 +300,8 @@ label.f > span small { font-weight: 400; color: var(--ink-muted); }
   transition: background .15s, border-color .15s;
 }
 .pill input:checked + span { background: var(--plum); border-color: var(--plum); color: var(--cream); }
+.pill input:disabled + span { opacity: .5; border-style: dashed; cursor: not-allowed; }
+.pill input:disabled:checked + span { opacity: 1; background: var(--cranberry); border-color: var(--cranberry); }
 .pill input:focus-visible + span { outline: 3px solid var(--gold); outline-offset: 2px; }
 
 .stepper { display: flex; align-items: center; gap: 10px; }
@@ -468,6 +471,10 @@ const CONFIG = {
   weekday: "Saturday",
   time: "6:00 PM till late",
   place: "Address in the group chat",
+  // Most dishes allowed per course. When a course hits its limit it closes,
+  // and anyone trying to add one gets pointed to courses that still need food.
+  // Use null for no limit.
+  limits: { main: null, side: 5, app: null, bread: null, dessert: null, drinks: 3 },
 };
 
 /* ---------------- Data ---------------- */
@@ -558,7 +565,7 @@ function bankIdeas(entries, preferCourse) {
   if (preferCourse) order.unshift(preferCourse);
   const out = [], seen = new Set();
   for (const id of order) {
-    if (seen.has(id)) continue; seen.add(id);
+    if (seen.has(id) || isFull(id, entries)) continue; seen.add(id);
     const opts = IDEA_BANK[id].filter(d => !findClash(d, entries));
     const pick = opts[Math.floor(Math.random() * opts.length)];
     if (pick) out.push({ dish: pick, course: id, why: preferCourse === id && out.length === 0 ? "same course, not taken yet" : `${COURSE[id].label.toLowerCase()} need${(counts[id] || 0) === 0 ? " a first one" : " more"}` });
@@ -572,6 +579,16 @@ function courseCounts(entries) {
   for (const e of entries) c[e.course] = (c[e.course] || 0) + 1;
   return c;
 }
+function limitFor(id) {
+  const n = CONFIG.limits && CONFIG.limits[id];
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+function isFull(id, list = entries) {
+  const lim = limitFor(id);
+  return lim != null && list.filter(e => e.course === id).length >= lim;
+}
+const fullCourses = () => COURSES.filter(c => isFull(c.id)).map(c => c.id);
+
 function headcount(entries) {
   const people = new Map();
   for (const e of entries) {
@@ -603,6 +620,7 @@ function demoApi(action, p) {
   const entries = store.get("fg-demo", []);
   if (action === "list") return { ok: true, entries };
   if (action === "add") {
+    if (p.limit && entries.filter(x => x.course === p.course).length >= p.limit) return { ok: false, error: "full", entries };
     const e = { id: "d" + Date.now(), ts: new Date().toISOString(), name: p.name, dish: p.dish, course: p.course, guests: p.guests, diet: p.diet };
     entries.push(e); store.set("fg-demo", entries);
     return { ok: true, entry: e, entries };
@@ -660,12 +678,16 @@ function render() {
   for (const c of COURSES) {
     const items = entries.filter(e => e.course === c.id);
     const box = el("section", "course");
-    const h = el("header"); h.append(el("h3", null, `${c.icon} ${c.label}`), el("span", "count", `${items.length}`));
+    const lim = limitFor(c.id);
+    const h = el("header"); h.append(el("h3", null, `${c.icon} ${c.label}`), el("span", "count", lim ? `${items.length} of ${lim}` : `${items.length}`));
     box.append(h);
     if (!items.length) {
       box.append(el("div", "need", loaded ? `Nobody yet. Claim it!` : "Loading…"));
     } else {
-      if ((counts[c.id] || 0) < c.want) box.append(el("div", "need", `could use ${c.want - counts[c.id]} more`));
+      const n = items.length;
+      if (lim != null && n >= lim) box.append(el("div", "need full", "Full, thanks! Pick another course"));
+      else if (n < c.want) box.append(el("div", "need", `could use ${c.want - n} more`));
+      else if (lim != null) box.append(el("div", "need", `${lim - n} spot${lim - n === 1 ? "" : "s"} left`));
       for (const e of items) {
         const row = el("div", "dish" + (mine.has(e.id) ? " mine" : "") + (e.id === freshId ? " fresh" : ""));
         row.append(el("div", "plate", c.icon));
@@ -679,6 +701,16 @@ function render() {
     }
     board.append(box);
   }
+  updatePills();
+}
+function updatePills() {
+  for (const c of COURSES) {
+    const input = $("course-" + c.id);
+    if (!input) continue;
+    const full = isFull(c.id);
+    input.disabled = full;
+    input.nextElementSibling.textContent = `${c.icon} ${c.label}${full ? " · full" : ""}`;
+  }
 }
 
 /* ---------------- Form ---------------- */
@@ -689,7 +721,7 @@ function buildForm() {
   COURSES.forEach(c => {
     const l = el("label", "pill");
     const i = el("input"); i.type = "radio"; i.name = "course"; i.value = c.id; i.id = "course-" + c.id;
-    i.addEventListener("change", () => { courseTouched = true; });
+    i.addEventListener("change", () => { courseTouched = true; checkDish(false); });
     l.append(i, el("span", null, `${c.icon} ${c.label}`));
     cg.append(l);
   });
@@ -725,6 +757,22 @@ $("f-dish")?.addEventListener("input", () => { clearTimeout(checkTimer); checkTi
 function checkDish(fromSubmit) {
   const help = $("dish-help");
   const dish = $("f-dish").value.trim();
+  const course = selectedCourse() || guessCourse(dish);
+  if (course && isFull(course) && (dish.length > 2 || fromSubmit)) {
+    delete help.dataset.ideas;
+    const c = COURSE[course];
+    const box = el("div", "heads-up");
+    const msg = el("p");
+    msg.append(el("strong", null, `We're tapped out on ${c.label.toLowerCase()}. `),
+      `${limitFor(course)} people are already bringing ${c.label.toLowerCase()}. Could you bring something the table still needs?`);
+    box.append(msg);
+    const ideaRow = el("div", "ideas");
+    box.append(ideaRow);
+    if (!courseTouched) box.append(el("p", "thinking", `Not ${c.label.toLowerCase()}? Pick the right course below.`));
+    help.replaceChildren(box);
+    fillIdeas(ideaRow, dish, null);
+    return { level: "full", course };
+  }
   const clash = dish.length > 2 ? findClash(dish, entries) : null;
   if (!clash || override) { if (!help.dataset.ideas) help.replaceChildren(); return null; }
   delete help.dataset.ideas;
@@ -744,7 +792,7 @@ function checkDish(fromSubmit) {
   anyway.addEventListener("click", () => { override = true; help.replaceChildren(); if (fromSubmit) $("form").requestSubmit(); });
   box.append(anyway);
   help.replaceChildren(box);
-  fillIdeas(ideaRow, dish, selectedCourse() || clash.entry.course);
+  fillIdeas(ideaRow, dish, course || clash.entry.course);
   return clash;
 }
 
@@ -774,10 +822,11 @@ function fillIdeas(row, dish, course) {
   api("ideas", {
     dish, course,
     taken: entries.map(e => ({ dish: e.dish, course: e.course })),
+    full: fullCourses(),
   }).then(res => {
     if (ctl.aborted || !row.isConnected) return;
     const fresh = (res && res.ok && Array.isArray(res.ideas) ? res.ideas : [])
-      .filter(i => i && i.dish && !isTaken(i.dish, entries)).slice(0, 4);
+      .filter(i => i && i.dish && !isTaken(i.dish, entries) && !isFull(i.course)).slice(0, 4);
     if (fresh.length) row.replaceChildren(...fresh.map(ideaButton));
     else note.remove();
   }).catch(() => { note.remove(); });
@@ -809,12 +858,18 @@ $("form").addEventListener("submit", async ev => {
   if (!course) { showErr("Pick which course it is."); return; }
   // Get the freshest list before checking for doubles
   await refresh();
-  if (!override && checkDish(true)) { $("dish-help").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+  if (checkDish(true)) { $("dish-help").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
 
   const diet = [...document.querySelectorAll("input[name=diet]:checked")].map(i => i.value);
   const btn = $("submit"); btn.disabled = true; btn.textContent = "Setting the table…";
   try {
-    const res = await api("add", { name, dish, course, guests, diet });
+    const res = await api("add", { name, dish, course, guests, diet, limit: limitFor(course) });
+    if (res && res.error === "full") {
+      // Someone else filled the course while this form was open
+      entries = res.entries || entries; render(); checkDish(true);
+      $("dish-help").scrollIntoView({ block: "nearest", behavior: "smooth" });
+      return;
+    }
     if (!res || !res.ok) throw new Error(res?.error || "failed");
     entries = res.entries || [...entries, res.entry];
     mine.add(res.entry.id); store.set("fg-mine", [...mine]);
