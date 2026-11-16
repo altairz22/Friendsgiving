@@ -150,7 +150,7 @@ function notifyHost_(entry, entries, limit) {
 
   const html =
     `<div style="font-family:Helvetica,Arial,sans-serif;color:#2B0F2E;max-width:560px">` +
-    `<h2 style="margin:0 0 6px;color:#C9521F">New potluck sign-up</h2>` +
+    `<h2 style="margin:0 0 6px;color:#C9521F">New Friendsgiving sign-up</h2>` +
     `<p style="font-size:16px;margin:0 0 4px"><b>${esc_(entry.name)}</b>${plus} is bringing <b>${esc_(entry.dish)}</b> ` +
     `<span style="color:#7A5A72">(${COURSES[entry.course]}${entry.diet.length ? ', ' + esc_(entry.diet.join(', ')) : ''})</span></p>` +
     (nowFull ? `<p style="margin:0 0 8px;color:#3F5530"><b>${COURSES[entry.course]} are now full (${limit} of ${limit}).</b> New guests will be steered to other courses.</p>` : '') +

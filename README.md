@@ -1,6 +1,6 @@
 # Friendsgiving
 
-A one-page invite for Friendsgiving on **Saturday, November 28**, plus a live potluck board.
+A one-page invite for Friendsgiving on **Saturday, November 28**, plus a live board of who's bringing what.
 
 - **Invitation** (`index.html`): fits one screen with no scrolling. Guests tap **Claim a dish** or **See what's on the table**.
 - **The table** (`index.html#table`): everyone's dishes grouped by course, with a running headcount and the courses that still need something.
@@ -49,7 +49,7 @@ Open `index.html`, find the `CONFIG` block near the bottom, and fill it in:
 const CONFIG = {
   apiUrl: "https://script.google.com/macros/s/XXXX/exec",  // from step 3
   weekday: "Saturday",
-  time: "6:00 PM till late",          // change to your real time
+  time: "7:00 PM",
   place: "17433 Sunburst St, Northridge, CA 91325", // tapping it opens Google Maps
   limits: { main: null, side: 5, app: null, bread: null, dessert: null, drinks: 3 },  // most dishes per course; null = no limit
 };
