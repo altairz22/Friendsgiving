@@ -8,7 +8,7 @@
  * Setup steps are in the README.
  */
 
-const HOST_EMAIL = 'zs.zarinasheikh@gmail.com';   // where sign-up notifications go
+const HOST_EMAIL = 'you@example.com';   // put YOUR email here: where sign-up notifications go
 const SHEET_NAME = 'Potluck';
 const PARTY_DATE = 'Saturday, November 28';
 const SITE_URL   = '';                               // optional: your invite link, shown in emails

@@ -25,7 +25,7 @@ The page is static. Sign-ups are stored in a Google Sheet you own, and a small G
 
 1. Create a new Google Sheet (sheets.new) while signed in to the Google account that should send the emails. Name it something like *Friendsgiving potluck*.
 2. In the sheet, open **Extensions → Apps Script**.
-3. Delete the starter code, then paste in everything from [`apps-script/Code.gs`](apps-script/Code.gs). Save.
+3. Delete the starter code, then paste in everything from [`apps-script/Code.gs`](apps-script/Code.gs). Change `HOST_EMAIL` near the top to your email. Save.
 4. In the function dropdown at the top, pick **setup** and press **Run**. Google asks for permission (the app needs to edit your sheet and send email as you). Allow it. You should get a "sign-ups are connected" email.
 
 ### 2. (Optional) Add your Claude API key for smarter ideas
@@ -50,7 +50,7 @@ const CONFIG = {
   apiUrl: "https://script.google.com/macros/s/XXXX/exec",  // from step 3
   weekday: "Saturday",
   time: "7:00 PM",
-  place: "17433 Sunburst St, Northridge, CA 91325", // tapping it opens Google Maps
+  place: "123 Main St, Springfield, CA 90000", // your address; tapping it opens Google Maps
   limits: { main: null, side: 5, app: null, bread: null, dessert: null, drinks: 3 },  // most dishes per course; null = no limit
 };
 ```

@@ -371,7 +371,7 @@ label.f > span small { font-weight: 400; color: var(--ink-muted); }
         <div class="rest">
           <span id="c-weekday">Saturday</span>
           <em id="c-time">7:00 PM</em>
-          <a id="c-place" class="place" href="https://www.google.com/maps/search/?api=1&amp;query=17433%20Sunburst%20St%2C%20Northridge%2C%20CA%2091325" target="_blank" rel="noopener">17433 Sunburst St,<br>Northridge, CA 91325</a>
+          <a id="c-place" class="place" target="_blank" rel="noopener">Address coming soon</a>
         </div>
       </div>
 
@@ -472,7 +472,7 @@ const CONFIG = {
   apiUrl: "",                          // paste your Apps Script web app URL (ends in /exec)
   weekday: "Saturday",
   time: "7:00 PM",
-  place: "17433 Sunburst St, Northridge, CA 91325",
+  place: "",                           // your address, e.g. "123 Main St, Springfield, CA 90000"
   // Most dishes allowed per course. When a course hits its limit it closes,
   // and anyone trying to add one gets pointed to courses that still need food.
   // Use null for no limit.
@@ -927,11 +927,11 @@ function showNotice(t, ms = 5000) {
 /* ---------------- Boot ---------------- */
 $("c-weekday").textContent = CONFIG.weekday;
 $("c-time").textContent = CONFIG.time;
-{ // street on one line, city/state/zip on the next
+if (CONFIG.place) { // street on one line, city/state/zip on the next
   const [street, ...rest] = CONFIG.place.split(", ");
   $("c-place").replaceChildren(street + (rest.length ? "," : ""), ...(rest.length ? [document.createElement("br"), rest.join(", ")] : []));
+  $("c-place").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.place);
 }
-$("c-place").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.place);
 buildForm();
 render();
 route();
