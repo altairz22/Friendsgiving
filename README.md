@@ -50,7 +50,7 @@ const CONFIG = {
   apiUrl: "https://script.google.com/macros/s/XXXX/exec",  // from step 3
   weekday: "Saturday",
   time: "6:00 PM till late",          // change to your real time
-  place: "Address in the group chat", // or your actual address
+  place: "17433 Sunburst St, Northridge, CA 91325", // tapping it opens Google Maps
   limits: { main: null, side: 5, app: null, bread: null, dessert: null, drinks: 3 },  // most dishes per course; null = no limit
 };
 ```

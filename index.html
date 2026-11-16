@@ -124,7 +124,9 @@ h1.title {
 .date .day small { font-family: var(--mono); font-weight: 500; font-size: .72rem; letter-spacing: .2em; }
 .date .rest { display: flex; flex-direction: column; justify-content: center; text-align: left; gap: 2px; }
 .date .rest span { font-size: clamp(1rem, 2.6vh, 1.25rem); }
-.date .rest em { font-style: normal; font-weight: 400; color: var(--crust); font-size: clamp(.86rem, 2.1vh, 1rem); }
+.date .rest em, .date .rest .place { font-style: normal; font-weight: 400; color: var(--crust); font-size: clamp(.86rem, 2.1vh, 1rem); }
+.date .rest .place { text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; line-height: 1.3; }
+.date .rest .place:hover { color: var(--gold); }
 
 .pitch {
   margin: 0; max-width: 40ch;
@@ -369,7 +371,7 @@ label.f > span small { font-weight: 400; color: var(--ink-muted); }
         <div class="rest">
           <span id="c-weekday">Saturday</span>
           <em id="c-time">6:00 PM till late</em>
-          <em id="c-place">Address in the group chat</em>
+          <a id="c-place" class="place" href="https://www.google.com/maps/search/?api=1&amp;query=17433%20Sunburst%20St%2C%20Northridge%2C%20CA%2091325" target="_blank" rel="noopener">17433 Sunburst St,<br>Northridge, CA 91325</a>
         </div>
       </div>
 
@@ -470,7 +472,7 @@ const CONFIG = {
   apiUrl: "",                          // paste your Apps Script web app URL (ends in /exec)
   weekday: "Saturday",
   time: "6:00 PM till late",
-  place: "Address in the group chat",
+  place: "17433 Sunburst St, Northridge, CA 91325",
   // Most dishes allowed per course. When a course hits its limit it closes,
   // and anyone trying to add one gets pointed to courses that still need food.
   // Use null for no limit.
@@ -925,7 +927,11 @@ function showNotice(t, ms = 5000) {
 /* ---------------- Boot ---------------- */
 $("c-weekday").textContent = CONFIG.weekday;
 $("c-time").textContent = CONFIG.time;
-$("c-place").textContent = CONFIG.place;
+{ // street on one line, city/state/zip on the next
+  const [street, ...rest] = CONFIG.place.split(", ");
+  $("c-place").replaceChildren(street + (rest.length ? "," : ""), ...(rest.length ? [document.createElement("br"), rest.join(", ")] : []));
+}
+$("c-place").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.place);
 buildForm();
 render();
 route();
